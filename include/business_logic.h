@@ -3,9 +3,9 @@
 #include <string>
 
 //Funciones para navegar menús
-void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], CitaTree *root);
+void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], CitaTree *root,int &global_id,int &listState);
 void printAppointmentsMenu(Cita *start, Cita *end, int &listState, CitaTree *&root, bool &treeCorrupted, Tratamiento catalogo[7]);
-void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratamiento catalogo[7]);
+void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratamiento catalogo[7], int &listState);
 void printFoundDates(Cita *found, std::string name);
 void searchByID(Cita *&start, Cita *&end, CitaTree *&root, int &listState, bool &treeCorrupted, Cita *&found, Tratamiento catalogo[7]);
 void searchByName(Cita *&start, Cita *&end, CitaTree *&root, int &listState, bool &treeCorrupted, Cita *&found, Tratamiento catalogo[7]);

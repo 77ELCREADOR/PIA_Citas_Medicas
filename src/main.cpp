@@ -46,17 +46,7 @@ int main()
             {
             case 'A':
                 newApp = new Cita();
-                captureApp(start, end, newApp, catalogo, root);
-                newApp->info.id = ++global_id;
-                addApp(start, end, newApp);
-                appendToFile(newApp);
-                saveBinID(global_id);
-                addNodeTree(root, newApp);
-                if (listState == 2)
-                {
-                    listState = 0;
-                }
-                cout << "Se ha agregado la nueva cita con éxito!\n";
+                captureApp(start, end, newApp, catalogo, root,global_id,listState);
                 break;
             case 'B':
                 searchMenu(start, end, root, catalogo, listState, treeCorrupted);

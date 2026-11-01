@@ -10,8 +10,8 @@
 
 using namespace std;
 
-//Funciones para navegar menús
-void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], CitaTree *root)
+// Funciones para navegar menús
+void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], CitaTree *root, int &global_id, int &listState)
 {
     string tempText = "";
     int year = 0, month = 0, day = 0, hour = 0, minute = 0, cantidad = 0, tratamiento_id = 0;
@@ -19,13 +19,17 @@ void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], Cit
 
     while (true)
     {
-        cout << "Introduce el nombre del paciente empezando por los apellidos:\n";
+        cout << "Introduce el nombre del paciente empezando por los apellidos:\nDeja el campo vacío para regresar al menú principal\n";
         regex namePattern(R"(^[A-Za-z]{2,} [A-Za-z]{2,}$)");
         getline(cin, tempText);
         if (cin.fail())
         {
             cout << "Algo salió mal\n";
             cin.clear();
+        }
+        else if (tempText == "")
+        {
+            return;
         }
         else if (tempText.length() > 49 || tempText.length() <= 0)
         {
@@ -45,12 +49,16 @@ void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], Cit
     while (true)
     {
         regex pattern("^\\d{1,2}/\\d{1,2}/\\d{4} \\d{2}:\\d{2}$");
-        cout << "Introduce la fecha de la cita usando el siguiente formato: MM/DD/AAAA HH:MM\n";
+        cout << "Introduce la fecha de la cita usando el siguiente formato: MM/DD/AAAA HH:MM\nDeja el campo vacío para regresar\n";
         getline(cin, tempText);
         if (cin.fail())
         {
             cout << "Algo salio mal\n";
             cin.clear();
+        }
+        else if (tempText == "")
+        {
+            return;
         }
         else if (regex_match(tempText, pattern))
         {
@@ -87,7 +95,7 @@ void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], Cit
     }
     while (true)
     {
-        cout << "Selecciona uno de las siguientes opciones de tratamiento (introduce el número asignado):\n";
+        cout << "Selecciona uno de las siguientes opciones de tratamiento (introduce el número asignado):\nIntrouce 0 para regresar\n";
         for (int i = 0; i < 7; i++)
         {
             cout << i + 1 << "-" << catalogo[i].tratamiento << "\t$" << catalogo[i].precio << "\n";
@@ -99,7 +107,11 @@ void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], Cit
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-        else if (tratamiento_id < 1 || tratamiento_id > 7)
+        else if (tratamiento_id == 0)
+        {
+            return;
+        }
+        else if (tratamiento_id < 0 || tratamiento_id > 7)
         {
             cout << "Favor de introducir un código de tratamiento válido\n";
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -113,7 +125,7 @@ void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], Cit
     }
     while (true)
     {
-        cout << "Introduce la cantidad del tratamiento:\n";
+        cout << "Introduce la cantidad del tratamiento:\nIntroduce 0 para regresar\n";
         cin >> cantidad;
         if (cin.fail() || cin.peek() != '\n')
         {
@@ -121,7 +133,11 @@ void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], Cit
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-        else if (cantidad <= 0 || cantidad > 99)
+        else if (cantidad == 0)
+        {
+            return;
+        }
+        else if (cantidad < 0 || cantidad > 99)
         {
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "Favor de introducir una cantidad de tratamiento de entre 1 y 99 unidades\n";
@@ -135,6 +151,16 @@ void captureApp(Cita *start, Cita *end, Cita *&App, Tratamiento catalogo[7], Cit
     }
     App->info.subtotal = catalogo[tratamiento_id - 1].precio * App->info.cantidad;
     App->info.total = App->info.subtotal * 1.16;
+    App->info.id = ++global_id;
+    addApp(start, end, App);
+    appendToFile(App);
+    saveBinID(global_id);
+    addNodeTree(root, App);
+    if (listState == 2)
+    {
+        listState = 0;
+    }
+    cout << "Se ha agregado la nueva cita con éxito!\n";
 }
 void printAppointmentsMenu(Cita *start, Cita *end, int &listState, CitaTree *&root, bool &treeCorrupted, Tratamiento catalogo[7])
 {
@@ -194,7 +220,7 @@ void printAppointmentsMenu(Cita *start, Cita *end, int &listState, CitaTree *&ro
                 if (treeCorrupted)
                 {
                     destroyTree(root);
-                    setTree(start,root);
+                    setTree(start, root);
                     treeCorrupted = false;
                 }
                 printChronological(root, catalogo);
@@ -209,7 +235,7 @@ void printAppointmentsMenu(Cita *start, Cita *end, int &listState, CitaTree *&ro
         }
     }
 }
-void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratamiento catalogo[7])
+void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratamiento catalogo[7], int &listState)
 {
     char option = {};
     string tempText = "";
@@ -233,13 +259,17 @@ void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratam
             case 'A':
                 while (true)
                 {
-                    cout << "Introduce el nombre del paciente empezando por los apellidos:\n";
+                    cout << "Introduce el nombre del paciente empezando por los apellidos:\nDeja el campo en blanco para regresar\n";
                     regex namePattern(R"(^[A-Za-z]{2,} [A-Za-z]{2,}$)");
                     getline(cin, tempText);
                     if (cin.fail())
                     {
                         cout << "Algo salió mal\n";
                         cin.clear();
+                    }
+                    else if (tempText == "")
+                    {
+                        return;
                     }
                     else if (tempText.length() > 49 || tempText.length() <= 0)
                     {
@@ -254,6 +284,7 @@ void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratam
                         capitalizeWords(tempText);
                         strcpy(found->info.nombre_paciente, tempText.c_str());
                         cout << "Se ha editado el nombre satisfadctoriamente\n";
+                        listState = 0;
                         saveToFile(start);
                         break;
                     }
@@ -263,12 +294,16 @@ void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratam
                 while (true)
                 {
                     regex pattern("^\\d{1,2}/\\d{1,2}/\\d{4} \\d{2}:\\d{2}$");
-                    cout << "Introduce la fecha de la cita usando el siguiente formato: MM/DD/AAAA HH:MM\nIntroduce la misma fecha para volver sin realizar cambios\n";
+                    cout << "Introduce la fecha de la cita usando el siguiente formato: MM/DD/AAAA HH:MM\nIntroduce la misma fecha para volver sin realizar cambios o deja el campo vacío\n";
                     getline(cin, tempText);
                     if (cin.fail())
                     {
                         cout << "Algo salio mal\n";
                         cin.clear();
+                    }
+                    else if (tempText == "")
+                    {
+                        return;
                     }
                     else if (regex_match(tempText, pattern))
                     {
@@ -309,7 +344,7 @@ void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratam
 
                             saveToFile(start);
                             cout << "Se ha editado la fecha de la cita satisfactoriamente\n";
-
+                            listState = 0;
                             break;
                         }
                     }
@@ -322,7 +357,7 @@ void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratam
             case 'C':
                 while (true)
                 {
-                    cout << "Selecciona uno de las siguientes opciones de tratamiento (introduce el número asignado):\n";
+                    cout << "Selecciona uno de las siguientes opciones de tratamiento (introduce el número asignado):\nIngresa 0 para regresar\n";
                     for (int i = 0; i < 7; i++)
                     {
                         cout << i + 1 << "-" << catalogo[i].tratamiento << "\t$" << catalogo[i].precio << "\n";
@@ -333,6 +368,10 @@ void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratam
                         cout << "Algo salió mal\n";
                         cin.clear();
                         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    }
+                    else if (tratamiento_id == 0)
+                    {
+                        return;
                     }
                     else if (tratamiento_id < 1 || tratamiento_id > 7)
                     {
@@ -348,13 +387,17 @@ void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratam
                 }
                 while (true)
                 {
-                    cout << "Introduce la cantidad del tratamiento:\n";
+                    cout << "Introduce la cantidad del tratamiento:\nIngresa 0 para regresar\n";
                     cin >> cantidad;
                     if (cin.fail() || cin.peek() != '\n')
                     {
                         cout << "Introduce un valor válido\n";
                         cin.clear();
                         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    }
+                    else if (cantidad == 0)
+                    {
+                        return;
                     }
                     else if (cantidad <= 0 || cantidad > 99)
                     {
@@ -371,6 +414,7 @@ void modificarCita(Cita *start, Cita *end, Cita *&found, CitaTree *&root, Tratam
                 found->info.subtotal = catalogo[tratamiento_id - 1].precio * found->info.cantidad;
                 found->info.total = found->info.subtotal * 1.16;
                 cout << "Se ha editado el tratamiento satisfactoriamente\n";
+                listState = 0;
                 saveToFile(start);
 
                 break;
@@ -406,13 +450,17 @@ void searchByID(Cita *&start, Cita *&end, CitaTree *&root, int &listState, bool 
     char option = {};
     while (true)
     {
-        cout << "Favor de introducir el ID de la cita:\n";
+        cout << "Favor de introducir el ID de la cita:\nIntroduce 0 para regresar\n";
         cin >> id;
         if (cin.fail() || cin.peek() != '\n')
         {
             cout << "Favor de usar sólo números\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+        else if (id == 0)
+        {
+            return;
         }
         else
         {
@@ -449,8 +497,8 @@ void searchByID(Cita *&start, Cita *&end, CitaTree *&root, int &listState, bool 
                             cout << "Se ha eliminado la cita satisfactoriamente\n";
                             break;
                         case 'B':
-                            modificarCita(start, end, found, root, catalogo);
-                            cout << "Se ha modificado la cita con éxito!:\n";
+                            modificarCita(start, end, found, root, catalogo, listState);
+                            cout << "Estado Actual de la cita\n";
                             cout << "ID: " << found->info.id << "\tNombre: " << found->info.nombre_paciente << "\t" << found->info.cita.month << "/" << found->info.cita.day << "/" << found->info.cita.year << " " << found->info.cita.time.hour << ":" << found->info.cita.time.minute << "\n";
                             break;
                         case 'C':
@@ -489,10 +537,22 @@ void searchByName(Cita *&start, Cita *&end, CitaTree *&root, int &listState, boo
             listState = 2;
             treeCorrupted = true;
         }
-        cout << "Favor de introducir un nombre para la búsqueda, empezando por el apellido\n";
+        cout << "Favor de introducir un nombre para la búsqueda, empezando por el apellido\nDeja el campo en blanco para regresar\n";
         getline(cin, name);
         regex namePattern(R"(^[A-Za-z]{2,}( [A-Za-z]{2,})?$)");
-        if (regex_match(name, namePattern))
+        if (name == "")
+        {
+            return;
+        }
+        if (cin.fail())
+        {
+            cout << "Algo salió mal\n";
+        }
+        else if (name == "")
+        {
+            return;
+        }
+        else if (regex_match(name, namePattern))
         {
             capitalizeWords(name);
             found = BinarySearch(start, end, name);
@@ -502,13 +562,17 @@ void searchByName(Cita *&start, Cita *&end, CitaTree *&root, int &listState, boo
                 printFoundDates(found, name);
                 while (true)
                 {
-                    cout << "Favor de introducir el ID de la cita con la que vamos a trabajar:\n";
+                    cout << "Favor de introducir el ID de la cita con la que vamos a trabajar:\nIntroduce 0 para regresar\n";
                     cin >> id;
                     if (cin.fail() || cin.peek() != '\n')
                     {
                         cout << "Solamente se aceptan números\n";
                         cin.clear();
                         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    }
+                    else if (id == 0)
+                    {
+                        return;
                     }
                     else if (!foundID(found, name, id))
                     {
@@ -539,8 +603,7 @@ void searchByName(Cita *&start, Cita *&end, CitaTree *&root, int &listState, boo
                                     cout << "Se ha eliminado la cita satisfactoriamente\n";
                                     break;
                                 case 'B':
-                                    modificarCita(start, end, found, root, catalogo);
-                                    listState = 0;
+                                    modificarCita(start, end, found, root, catalogo, listState);
                                     cout << "Estado final de la cita:\n";
                                     cout << "ID: " << found->info.id << "\tNombre: " << found->info.nombre_paciente << "\t" << found->info.cita.month << "/" << found->info.cita.day << "/" << found->info.cita.year << " " << found->info.cita.time.hour << ":" << found->info.cita.time.minute << "\n";
                                     break;
@@ -610,7 +673,7 @@ void searchMenu(Cita *&start, Cita *&end, CitaTree *&root, Tratamiento catalogo[
         }
     }
 }
-//Funciones para imprimir datos
+// Funciones para imprimir datos
 void printAppointmentInfo(Cita *app, Tratamiento catalogo[7])
 {
     if (app == NULL)
@@ -658,10 +721,10 @@ void printChronological(CitaTree *&root, Tratamiento catalogo[7])
         seguirá por ahí hasta llegar al final y regresará, listo para pasar al siguiente elemento de la derecha hasta llegar al último elemento, el cual, naturalmente será el más grande.
     */
 }
-//Funciones de validación
+// Funciones de validación
 void capitalizeWords(string &text)
 {
-    //Recorre el texto ingresado por el usuario y convierte el texto en mayúsculas en caso de ser necesario, el resto lo convierte a minúsculas para mantener homogeneidad en los ingresos, principalmente se usa para el nombre.
+    // Recorre el texto ingresado por el usuario y convierte el texto en mayúsculas en caso de ser necesario, el resto lo convierte a minúsculas para mantener homogeneidad en los ingresos, principalmente se usa para el nombre.
     for (int i = 0; i < text.length(); i++)
     {
         if (i == 0 || text[i - 1] == ' ')
@@ -673,7 +736,7 @@ void capitalizeWords(string &text)
             text[i] = tolower(text[i]);
         }
     }
-    //Implementamos ésta función en lugar de directamente desde el regex para que la entrada de datos sea más flexible, permitiendo que independientemente de que el usuario ingrese mayúsculas o minúsculas en el texto, el sistema lo convierta al formato correcto.
+    // Implementamos ésta función en lugar de directamente desde el regex para que la entrada de datos sea más flexible, permitiendo que independientemente de que el usuario ingrese mayúsculas o minúsculas en el texto, el sistema lo convierta al formato correcto.
 }
 bool expiredDate(int day, int month, int year, int hour, int minute)
 {
@@ -791,7 +854,7 @@ void closingApp(Cita *&start, CitaTree *&root)
 }
 bool containsName(string name, string input)
 {
-    //Validación que permite al usuario ingresar nombres parciales y obtener el resultado(s)
+    // Validación que permite al usuario ingresar nombres parciales y obtener el resultado(s)
     if (input.length() > name.length())
     {
         return false;
