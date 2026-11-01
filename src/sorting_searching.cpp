@@ -336,7 +336,7 @@ Cita *BinarySearch(Cita *start, Cita *end, string nombre)
 }
 Cita *BinarySearchID(Cita *start, Cita *end, int ID)
 {
-    if (start == NULL || end == NULL || start->prev != end)
+    if (start == NULL || end == NULL || start->prev == end)
     {
         return NULL;
     }
