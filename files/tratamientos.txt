@@ -1,0 +1,7 @@
+1 Consulta_Especialista Revision_general_de_oido_nariz_y_garganta 800.00
+2 Lavado_Otico Extraccion_de_cerumen_impactado_con_agua_a_presion 400.00
+3 Endoscopia_Nasal Exploracion_visual_profunda_de_fosas_nasales 1200.00
+4 Cauterizacion_Nasal Tratamiento_para_detener_sangrado_nasal_frecuente 900.00
+5 Extraccion_Objeto Retiro_de_cuerpos_extraños_en_oido_o_nariz 750.00
+6 Estudio_Audiometrico Evaluacion_completa_de_la_capacidad_auditiva 600.00
+7 Laringoscopia_Directa Revision_de_cuerdas_vocales_y_laringe 1500.00

@@ -1,0 +1,8 @@
+# Ignore compiled executables
+citas_app
+*.exe
+*.out
+*.o
+
+# Ignore Mac system files
+.DS_Store

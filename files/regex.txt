@@ -1,0 +1,39 @@
+Anchors (Controlling Position)
+^ : Matches the start of the string.
+$ : Matches the end of the string.
+Example: ^CIT ensures the string must begin with "CIT".
+Character Classes (The Building Blocks)
+\d : Any digit (0-9).
+\D : Any NON-digit (letters, symbols, spaces).
+\w : Any word character (a-z, A-Z, 0-9, and underscores).
+\W : Any NON-word character (spaces, punctuation).
+\s : Any whitespace (space, tab, newline).
+.  : The Wildcard. Matches absolutely ANY single character (except a newline).
+Custom Sets (Building Your Own Blocks)
+[abc] : Matches a single character if it is 'a', 'b', or 'c'.
+[a-z] : Matches any lowercase letter from a to z.
+[A-Za-z0-9] : Matches any alphanumeric character.
+[^0-9] : The ^ inside brackets means NOT. This matches any character that is not a number.
+Quantifiers (How Many Times?)
+You put these immediately after a character or class to dictate how many times it must appear.
+* : Matches 0 or more times. (Optional, can repeat endlessly).
++ : Matches 1 or more times. (Mandatory, can repeat endlessly).
+? : Matches 0 or 1 time. (Makes the preceding character optional).
+{n} : Matches exactly n times. (e.g., \d{4} means exactly 4 digits).
+{n,} : Matches n or more times.
+{n,m} : Matches between n and m times.
+Logic and Grouping
+( ... ) : Capture Group. Groups tokens together so you can apply quantifiers to the whole block.
+Example: (Ha){3} matches exactly "HaHaHa".
+| : OR operator.
+Example: (txt|pdf) matches either "txt" or "pdf".
+\ : Escape. If you literally want to search for a period . or a dollar sign $, you must escape their regex superpowers with a slash: \. or \$.
+3. Real-World Recipe Book
+Here are a few ways you would combine those bricks:
+Validating your Time format (HH:MM in 24hr format):
+^([01]\d|2[0-3]):[0-5]\d$
+(Translation: Start string. First digit is 0 or 1 followed by any digit, OR it's a 2 followed by 0-3. Then a literal colon. Then a 0-5 followed by any digit. End string.)
+A strong password (minimum 8 chars, at least one letter and one number):
+^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$
+An email address:
+^[\w\.-]+@[\w\.-]+\.\w{2,}$
