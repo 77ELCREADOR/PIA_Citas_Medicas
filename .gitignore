@@ -5,4 +5,4 @@ citas_app
 *.o
 
 # Ignore Mac system files
-.DS_Store
+.DS_Storey6

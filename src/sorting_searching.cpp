@@ -292,7 +292,7 @@ int getCount(Cita *start)
 //Funciones para Búsqueda binaria
 Cita *BinarySearch(Cita *start, Cita *end, string nombre)
 {
-    if (start == NULL || end == NULL || start->prev != end)
+    if (start == NULL || end == NULL || start->prev == end)
     {
         return NULL;
     }

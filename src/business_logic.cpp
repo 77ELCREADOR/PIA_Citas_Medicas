@@ -481,7 +481,6 @@ void searchByName(Cita *&start, Cita *&end, CitaTree *&root, int &listState, boo
     bool isInMenu = true;
     char option = {};
     int id = 0;
-
     while (true)
     {
         if (listState != 2)
